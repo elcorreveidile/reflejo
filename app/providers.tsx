@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react";
 import type { AppData, BackgroundId } from "@/lib/types";
-import { DEFAULT_DATA, loadData, saveData, newEntry, newLog, newPractice, newDecision, todayISO } from "@/lib/store";
+import { DEFAULT_DATA, loadData, saveData, newEntry, newLog, newPractice, newDecision, normalize, todayISO } from "@/lib/store";
 
 interface StoreValue {
   data: AppData;
@@ -16,6 +16,9 @@ interface StoreValue {
   toggleHabit: (index: number) => void;
   setBackground: (bg: BackgroundId, customBg?: string) => void;
   setName: (name: string) => void;
+  setHabitLabels: (labels: string[]) => void;
+  importData: (parsed: Partial<AppData>) => void;
+  resetData: () => void;
 }
 
 const StoreContext = createContext<StoreValue | null>(null);
@@ -97,9 +100,21 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     mutate((prev) => ({ ...prev, settings: { ...prev.settings, name } }));
   }, [mutate]);
 
+  const setHabitLabels = useCallback((labels: string[]) => {
+    mutate((prev) => ({ ...prev, settings: { ...prev.settings, habitLabels: labels } }));
+  }, [mutate]);
+
+  const importData = useCallback((parsed: Partial<AppData>) => {
+    mutate(() => normalize(parsed));
+  }, [mutate]);
+
+  const resetData = useCallback(() => {
+    mutate(() => ({ ...DEFAULT_DATA, settings: { ...DEFAULT_DATA.settings, habitLabels: [...DEFAULT_DATA.settings.habitLabels] } }));
+  }, [mutate]);
+
   return (
     <StoreContext.Provider
-      value={{ data, ready, addEntry, addLog, addPractice, addDecision, reviewDecision, setTodayMood, toggleHabit, setBackground, setName }}
+      value={{ data, ready, addEntry, addLog, addPractice, addDecision, reviewDecision, setTodayMood, toggleHabit, setBackground, setName, setHabitLabels, importData, resetData }}
     >
       {children}
     </StoreContext.Provider>

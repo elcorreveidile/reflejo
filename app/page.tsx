@@ -6,7 +6,7 @@ import { useStore } from "./providers";
 import { BACKGROUNDS, backgroundThumb } from "@/lib/backgrounds";
 import { computeStreak, todayISO } from "@/lib/store";
 import { promptForToday } from "@/lib/prompts";
-import { HABIT_LABELS, type BackgroundId } from "@/lib/types";
+import type { BackgroundId } from "@/lib/types";
 
 const MOODS = ["Bajo", "Flojo", "Normal", "Bien", "Pleno"];
 const MOOD_NOTES = [
@@ -60,9 +60,14 @@ export default function HoyPage() {
             {data.settings.name || "bienvenido"}
           </span>
         </div>
-        <div className="glass" style={{ flexShrink: 0, width: 60, height: 60, borderRadius: 999, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-          <span className="serif" style={{ fontSize: 22, fontWeight: 600, color: "#f3e2ce", lineHeight: 1 }}>{streak}</span>
-          <span style={{ fontSize: 10, color: "#cfd2e4" }}>{streak === 1 ? "día" : "días"}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+          <Link href="/ajustes" aria-label="Ajustes" className="glass" style={{ width: 44, height: 44, borderRadius: 999, display: "flex", alignItems: "center", justifyContent: "center", color: "#e7e7f0" }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-2.9-1.2l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0-1.2-2.9H1a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.2-2.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 2.9 1.2l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v.1a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" /></svg>
+          </Link>
+          <div className="glass" style={{ width: 60, height: 60, borderRadius: 999, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+            <span className="serif" style={{ fontSize: 22, fontWeight: 600, color: "#f3e2ce", lineHeight: 1 }}>{streak}</span>
+            <span style={{ fontSize: 10, color: "#cfd2e4" }}>{streak === 1 ? "día" : "días"}</span>
+          </div>
         </div>
       </header>
 
@@ -151,11 +156,12 @@ export default function HoyPage() {
       <section style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         <span style={{ fontSize: 15, fontWeight: 600 }}>Hábitos de hoy</span>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {HABIT_LABELS.map((label, i) => {
+          {data.settings.habitLabels.map((label, i) => {
+            if (!label.trim()) return null;
             const on = habitsToday[i];
             return (
               <button
-                key={label}
+                key={i}
                 onClick={() => toggleHabit(i)}
                 className="glass"
                 style={{ display: "flex", alignItems: "center", gap: 12, borderRadius: 14, padding: "12px 14px", textAlign: "left", width: "100%" }}

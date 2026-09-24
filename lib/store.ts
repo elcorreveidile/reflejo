@@ -1,4 +1,5 @@
 import type { AppData, JournalEntry, StateLog, PracticeLog, Decision } from "./types";
+import { HABIT_LABELS } from "./types";
 
 const KEY = "reflejo:v1";
 
@@ -9,8 +10,26 @@ export const DEFAULT_DATA: AppData = {
   practices: [],
   decisions: [],
   habits: {},
-  settings: { name: "", background: "cafe" },
+  settings: { name: "", background: "cafe", habitLabels: [...HABIT_LABELS] },
 };
+
+export function normalize(parsed: Partial<AppData>): AppData {
+  const settings = { ...DEFAULT_DATA.settings, ...(parsed.settings ?? {}) };
+  if (!Array.isArray(settings.habitLabels) || settings.habitLabels.length !== 4) {
+    settings.habitLabels = [...HABIT_LABELS];
+  }
+  return {
+    ...DEFAULT_DATA,
+    ...parsed,
+    version: 1,
+    settings,
+    entries: Array.isArray(parsed.entries) ? parsed.entries : [],
+    logs: Array.isArray(parsed.logs) ? parsed.logs : [],
+    practices: Array.isArray(parsed.practices) ? parsed.practices : [],
+    decisions: Array.isArray(parsed.decisions) ? parsed.decisions : [],
+    habits: parsed.habits && typeof parsed.habits === "object" ? parsed.habits : {},
+  };
+}
 
 export function uid(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
@@ -33,17 +52,7 @@ export function loadData(): AppData {
   try {
     const raw = window.localStorage.getItem(KEY);
     if (!raw) return DEFAULT_DATA;
-    const parsed = JSON.parse(raw) as Partial<AppData>;
-    return {
-      ...DEFAULT_DATA,
-      ...parsed,
-      settings: { ...DEFAULT_DATA.settings, ...(parsed.settings ?? {}) },
-      entries: parsed.entries ?? [],
-      logs: parsed.logs ?? [],
-      practices: parsed.practices ?? [],
-      decisions: parsed.decisions ?? [],
-      habits: parsed.habits ?? {},
-    };
+    return normalize(JSON.parse(raw) as Partial<AppData>);
   } catch {
     return DEFAULT_DATA;
   }

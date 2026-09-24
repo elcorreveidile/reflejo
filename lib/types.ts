@@ -54,6 +54,7 @@ export interface Settings {
   name: string;
   background: BackgroundId;
   customBg?: string; // data URL when background === "custom"
+  habitLabels: string[]; // 4 etiquetas de hábitos (vacío = oculto)
 }
 
 export interface AppData {
