@@ -19,13 +19,15 @@ export interface StateLog {
   createdAt: number;
 }
 
+export type Capacity = "critico" | "creatividad" | "liderazgo" | "autoconocimiento";
+
 export interface PracticeLog {
   id: string;
   date: string; // YYYY-MM-DD (local)
-  type: "reframe";
-  thought: string;
-  lens: string;
-  reframe: string;
+  exercise: string; // id del ejercicio
+  capacity: Capacity;
+  title: string;
+  fields: Record<string, string>;
   createdAt: number;
 }
 
