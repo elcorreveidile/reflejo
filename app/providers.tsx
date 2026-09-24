@@ -20,6 +20,7 @@ interface StoreValue {
   importData: (parsed: Partial<AppData>) => void;
   resetData: () => void;
   email: string | null;
+  uid: string | null;
   plus: boolean;
   plan: string | null;
   plusUntil: string | null;
@@ -27,6 +28,7 @@ interface StoreValue {
   requestLink: (email: string) => Promise<{ ok?: boolean; devLink?: string; error?: string }>;
   logout: () => Promise<void>;
   syncNow: () => Promise<void>;
+  refreshMe: () => Promise<boolean>;
 }
 
 const StoreContext = createContext<StoreValue | null>(null);
@@ -35,6 +37,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<AppData>(DEFAULT_DATA);
   const [ready, setReady] = useState(false);
   const [email, setEmail] = useState<string | null>(null);
+  const [uid, setUid] = useState<string | null>(null);
   const [plus, setPlus] = useState(false);
   const [plan, setPlan] = useState<string | null>(null);
   const [plusUntil, setPlusUntil] = useState<string | null>(null);
@@ -167,18 +170,30 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(async () => {
     try { await fetch("/api/auth/logout", { method: "POST" }); } catch {}
     setEmail(null);
+    setUid(null);
     setPlus(false);
     setPlan(null);
     setPlusUntil(null);
   }, []);
 
-  // ¿Hay sesión?
-  useEffect(() => {
-    fetch("/api/auth/me")
-      .then((r) => r.json())
-      .then((j) => { setEmail(j.email ?? null); setPlus(!!j.plus); setPlan(j.plan ?? null); setPlusUntil(j.plusUntil ?? null); })
-      .catch(() => {});
+  // Lee la sesión y el derecho Plus; devuelve si hay Plus (para refrescar tras una compra).
+  const refreshMe = useCallback(async () => {
+    try {
+      const r = await fetch("/api/auth/me");
+      const j = await r.json();
+      setEmail(j.email ?? null);
+      setUid(j.id ?? null);
+      setPlus(!!j.plus);
+      setPlan(j.plan ?? null);
+      setPlusUntil(j.plusUntil ?? null);
+      return !!j.plus;
+    } catch {
+      return false;
+    }
   }, []);
+
+  // ¿Hay sesión?
+  useEffect(() => { refreshMe(); }, [refreshMe]);
 
   // Sincroniza (con rebote) cuando cambian los datos y hay sesión.
   useEffect(() => {
@@ -190,7 +205,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   return (
     <StoreContext.Provider
-      value={{ data, ready, addEntry, addLog, addPractice, addDecision, reviewDecision, setTodayMood, toggleHabit, setBackground, setName, setHabitLabels, importData, resetData, email, plus, plan, plusUntil, syncing, requestLink, logout, syncNow }}
+      value={{ data, ready, addEntry, addLog, addPractice, addDecision, reviewDecision, setTodayMood, toggleHabit, setBackground, setName, setHabitLabels, importData, resetData, email, uid, plus, plan, plusUntil, syncing, requestLink, logout, syncNow, refreshMe }}
     >
       {children}
     </StoreContext.Provider>
