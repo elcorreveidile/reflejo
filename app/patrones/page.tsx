@@ -4,7 +4,27 @@ import Link from "next/link";
 import { useState } from "react";
 import { useStore } from "../providers";
 import { computeStreak, recentSeries, isoInDays } from "@/lib/store";
+import { buildAiContext } from "@/lib/aiContext";
 import type { AppData } from "@/lib/types";
+
+/** Render mínimo de **negrita** markdown para el informe. */
+function RichText({ text }: { text: string }) {
+  return (
+    <>
+      {text.split(/\n{2,}/).map((para, i) => (
+        <p key={i} style={{ margin: 0, fontSize: 14, lineHeight: 1.55, color: "#f5f3fb" }}>
+          {para.split(/(\*\*[^*]+\*\*)/g).map((seg, j) =>
+            seg.startsWith("**") && seg.endsWith("**") ? (
+              <strong key={j} style={{ color: "#fbfaff", fontWeight: 700 }}>{seg.slice(2, -2)}</strong>
+            ) : (
+              <span key={j}>{seg}</span>
+            )
+          )}
+        </p>
+      ))}
+    </>
+  );
+}
 
 const DIMS = [
   { key: "animo", name: "Ánimo", color: "#9aa6e0" },
@@ -50,6 +70,9 @@ export default function PatronesPage() {
   const [summary, setSummary] = useState<string | null>(null);
   const [sumLoading, setSumLoading] = useState(false);
   const [sumNote, setSumNote] = useState("");
+  const [report, setReport] = useState<string | null>(null);
+  const [repLoading, setRepLoading] = useState(false);
+  const [repNote, setRepNote] = useState("");
 
   const streak = computeStreak(data);
   const series = recentSeries(data, 14);
@@ -106,6 +129,31 @@ export default function PatronesPage() {
     }
   }
 
+  async function generateReport() {
+    if (!plus) { setRepNote("El informe mensual es parte de Reflejo Plus."); return; }
+    setRepLoading(true);
+    setRepNote("");
+    try {
+      const period = new Intl.DateTimeFormat("es-ES", { month: "long", year: "numeric" }).format(new Date());
+      const ctx = buildAiContext(data, { sinceDays: 31, maxEntries: 40, period });
+      const res = await fetch("/api/ai", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ mode: "monthly", context: ctx }),
+      });
+      const j = await res.json();
+      if (j.text) setReport(j.text);
+      else if (j.error === "no-ai") setRepNote("El asistente de IA aún no está configurado.");
+      else if (j.error === "auth") setRepNote("Entra con tu cuenta para usar la IA.");
+      else if (j.error === "plus") setRepNote("El informe mensual es parte de Reflejo Plus.");
+      else setRepNote("No se pudo generar ahora. Inténtalo de nuevo.");
+    } catch {
+      setRepNote("Sin conexión con la IA.");
+    } finally {
+      setRepLoading(false);
+    }
+  }
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
       <Link href="/" style={{ display: "flex", alignItems: "center", gap: 6, color: "#cfd2e4", fontSize: 14 }}>
@@ -152,6 +200,30 @@ export default function PatronesPage() {
               <p style={{ margin: 0, fontSize: 14, lineHeight: 1.55, color: "#f5f3fb" }}>{summary}</p>
             ) : (
               <span style={{ fontSize: 13, color: "#cfd2e4", lineHeight: 1.45 }}>{sumNote || "Un vistazo honesto a tu diario y tus estados de los últimos días, escrito por la IA."}</span>
+            )}
+          </section>
+
+          {/* Conversa con tu diario */}
+          <Link href="/conversar" className="glass" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, borderRadius: 16, padding: 16 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+              <span style={{ fontSize: 14, fontWeight: 600 }}>Conversa con tu diario ✨</span>
+              <span style={{ fontSize: 12, lineHeight: 1.35, color: "#cfd2e4" }}>Pregúntale a la IA sobre lo que has escrito</span>
+            </div>
+            <span style={{ color: "#9aa6e0", fontSize: 20 }}>{"→"}</span>
+          </Link>
+
+          {/* Informe mensual (Reflejo Plus) */}
+          <section style={{ borderRadius: 20, padding: 18, display: "flex", flexDirection: "column", gap: 12, background: "rgba(62,76,126,.28)", border: "1px solid rgba(154,166,224,.4)", WebkitBackdropFilter: "blur(12px)", backdropFilter: "blur(12px)" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+              <span style={{ fontSize: 15, fontWeight: 600 }}>Informe mensual</span>
+              <button onClick={generateReport} disabled={repLoading} style={{ background: "#9aa6e0", color: "#141628", border: "none", padding: "9px 14px", borderRadius: 999, fontSize: 13, fontWeight: 600, opacity: repLoading ? 0.6 : 1 }}>
+                {repLoading ? "Pensando…" : plus ? "Generar" : "✨ Plus"}
+              </button>
+            </div>
+            {report ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}><RichText text={report} /></div>
+            ) : (
+              <span style={{ fontSize: 13, color: "#cfd2e4", lineHeight: 1.45 }}>{repNote || "Un repaso del último mes: patrones, lo que has movido y una idea para el mes que viene."}</span>
             )}
           </section>
 

@@ -184,6 +184,14 @@ export default function HoyPage() {
         </div>
         <span style={{ color: "#f0be86", fontSize: 20 }}>{"→"}</span>
       </Link>
+
+      <Link href="/conversar" className="glass" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, borderRadius: 16, padding: 16 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+          <span style={{ fontSize: 14, fontWeight: 600 }}>Conversa con tu diario ✨</span>
+          <span style={{ fontSize: 12, lineHeight: 1.35, color: "#cfd2e4" }}>Pregúntale a la IA sobre lo que escribiste</span>
+        </div>
+        <span style={{ color: "#9aa6e0", fontSize: 20 }}>{"→"}</span>
+      </Link>
     </div>
   );
 }
