@@ -1,69 +1,182 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import Link from "next/link";
+import { useRef } from "react";
+import { useStore } from "./providers";
+import { BACKGROUNDS, backgroundThumb } from "@/lib/backgrounds";
+import { computeStreak, todayISO } from "@/lib/store";
+import { promptForToday } from "@/lib/prompts";
+import { HABIT_LABELS, type BackgroundId } from "@/lib/types";
+
+const MOODS = ["Bajo", "Flojo", "Normal", "Bien", "Pleno"];
+const MOOD_NOTES = [
+  "Un día cuesta arriba. Anótalo, no lo juzgues.",
+  "Con poca energía. ¿Qué te la ha drenado?",
+  "En equilibrio. Un buen sitio desde donde mirar.",
+  "Buen momento. ¿Qué lo ha hecho posible?",
+  "Pleno. Guarda este estado para recordarlo.",
+];
+
+function greeting(): string {
+  const h = new Date().getHours();
+  if (h < 12) return "Buenos días";
+  if (h < 20) return "Buenas tardes";
+  return "Buenas noches";
+}
+
+function longDate(): string {
+  return new Intl.DateTimeFormat("es-ES", { weekday: "long", day: "numeric", month: "short" }).format(new Date());
+}
+
+export default function HoyPage() {
+  const { data, setTodayMood, toggleHabit, setBackground } = useStore();
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const today = todayISO();
+  const streak = computeStreak(data);
+  const todayLog = [...data.logs].reverse().find((l) => l.date === today && typeof l.animo === "number");
+  const mood = todayLog?.animo ?? null;
+  const habitsToday = data.habits[today] ?? [false, false, false, false];
+
+  function onPickFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setBackground("custom", String(reader.result));
+    reader.readAsDataURL(file);
+  }
+
+  const options: BackgroundId[] = [...BACKGROUNDS.map((b) => b.id)];
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+      <header style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          <span style={{ fontSize: 12, letterSpacing: ".14em", textTransform: "uppercase", color: "#cfd2e4", fontWeight: 600 }}>
+            {longDate()}
+          </span>
+          <span className="serif" style={{ fontSize: 30, lineHeight: 1.1, fontWeight: 500, color: "#fbfaff" }}>
+            {greeting()},<br />
+            {data.settings.name || "bienvenido"}
+          </span>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        <div className="glass" style={{ flexShrink: 0, width: 60, height: 60, borderRadius: 999, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+          <span className="serif" style={{ fontSize: 22, fontWeight: 600, color: "#f3e2ce", lineHeight: 1 }}>{streak}</span>
+          <span style={{ fontSize: 10, color: "#cfd2e4" }}>{streak === 1 ? "día" : "días"}</span>
         </div>
-      </main>
+      </header>
+
+      {/* Selector de fondo */}
+      <section className="glass" style={{ borderRadius: 18, padding: 14, display: "flex", flexDirection: "column", gap: 11 }}>
+        <span style={{ fontSize: 13, fontWeight: 600 }}>Fondo · toca para cambiarlo</span>
+        <div style={{ display: "flex", gap: 9, alignItems: "center" }}>
+          {options.map((id) => {
+            const active = data.settings.background === id;
+            return (
+              <button
+                key={id}
+                onClick={() => setBackground(id)}
+                aria-label={`Fondo ${id}`}
+                style={{
+                  width: 46,
+                  height: 46,
+                  borderRadius: 12,
+                  border: "none",
+                  boxShadow: active ? "0 0 0 2px #141628,0 0 0 4px #f0be86" : "0 0 0 1px rgba(255,255,255,.35)",
+                  ...backgroundThumb(id),
+                }}
+              />
+            );
+          })}
+          <button
+            onClick={() => fileRef.current?.click()}
+            aria-label="Subir tu propia foto"
+            style={{
+              width: 46,
+              height: 46,
+              borderRadius: 12,
+              border: data.settings.background === "custom" ? "none" : "1px dashed rgba(255,255,255,.5)",
+              boxShadow: data.settings.background === "custom" ? "0 0 0 2px #141628,0 0 0 4px #f0be86" : "none",
+              background: "rgba(255,255,255,.06)",
+              color: "#e7e7f0",
+              fontSize: 22,
+              ...(data.settings.background === "custom" ? backgroundThumb("custom", data.settings.customBg) : {}),
+            }}
+          >
+            {data.settings.background === "custom" ? "" : "+"}
+          </button>
+          <input ref={fileRef} type="file" accept="image/*" onChange={onPickFile} style={{ display: "none" }} />
+        </div>
+      </section>
+
+      {/* Estado rápido */}
+      <section className="glass" style={{ borderRadius: 20, padding: "18px 16px", display: "flex", flexDirection: "column", gap: 14 }}>
+        <span style={{ fontSize: 15, fontWeight: 600 }}>¿Cómo te encuentras ahora?</span>
+        <div style={{ display: "flex", gap: 7 }}>
+          {MOODS.map((label, i) => {
+            const on = mood === i + 1;
+            return (
+              <button
+                key={label}
+                onClick={() => setTodayMood(i + 1)}
+                style={{
+                  flex: 1,
+                  padding: "12px 0",
+                  borderRadius: 12,
+                  border: on ? "1px solid #f0be86" : "1px solid rgba(255,255,255,.22)",
+                  background: on ? "#f0be86" : "rgba(255,255,255,.06)",
+                  color: on ? "#23233a" : "#d8daea",
+                  fontSize: 12,
+                  fontWeight: on ? 700 : 600,
+                }}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+        {mood && <span style={{ fontSize: 13, lineHeight: 1.4, color: "#cfd2e4" }}>{MOOD_NOTES[mood - 1]}</span>}
+      </section>
+
+      {/* Reflexión */}
+      <section style={{ borderRadius: 20, padding: "20px 18px", display: "flex", flexDirection: "column", gap: 14, background: "rgba(217,142,79,.24)", border: "1px solid rgba(240,190,140,.42)", WebkitBackdropFilter: "blur(12px)", backdropFilter: "blur(12px)" }}>
+        <span style={{ fontSize: 12, letterSpacing: ".12em", textTransform: "uppercase", color: "#f1d6b8", fontWeight: 600 }}>Reflexión de hoy</span>
+        <span className="serif" style={{ fontSize: 22, lineHeight: 1.25, fontWeight: 500, color: "#fbfaff" }}>{promptForToday()}</span>
+        <Link href="/diario" style={{ alignSelf: "flex-start", background: "#f0be86", color: "#23233a", padding: "12px 18px", borderRadius: 999, fontSize: 14, fontWeight: 600 }}>
+          Escribir en el diario
+        </Link>
+      </section>
+
+      {/* Hábitos */}
+      <section style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <span style={{ fontSize: 15, fontWeight: 600 }}>Hábitos de hoy</span>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {HABIT_LABELS.map((label, i) => {
+            const on = habitsToday[i];
+            return (
+              <button
+                key={label}
+                onClick={() => toggleHabit(i)}
+                className="glass"
+                style={{ display: "flex", alignItems: "center", gap: 12, borderRadius: 14, padding: "12px 14px", textAlign: "left", width: "100%" }}
+              >
+                <span style={{ flexShrink: 0, width: 26, height: 26, borderRadius: 8, background: on ? "#5b8c82" : "rgba(255,255,255,.08)", border: on ? "none" : "1px solid rgba(255,255,255,.4)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 700 }}>
+                  {on ? "✓" : ""}
+                </span>
+                <span style={{ fontSize: 14, color: on ? "#bfc2d6" : "#f5f3fb", textDecoration: on ? "line-through" : "none" }}>{label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      <Link href="/estados" className="glass" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, borderRadius: 16, padding: 16 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+          <span style={{ fontSize: 14, fontWeight: 600 }}>Tu semana en estados</span>
+          <span style={{ fontSize: 12, lineHeight: 1.35, color: "#cfd2e4" }}>Registra ánimo, energía y foco</span>
+        </div>
+        <span style={{ color: "#f0be86", fontSize: 20 }}>{"→"}</span>
+      </Link>
     </div>
   );
 }
