@@ -50,20 +50,36 @@ sistema de compra para bienes digitales** dentro de la app:
   rechaza en revisión.
 - **Android (Google Play):** igual con **Google Play Billing**.
 
-Plan para la versión nativa (siguiente iteración, no incluida aquí):
+**Ya está integrado RevenueCat** (`@revenuecat/purchases-capacitor`), que unifica
+StoreKit + Play Billing. La página `/plus` **detecta plataforma**
+(`Capacitor.getPlatform()`): en `web` usa Stripe; en `ios`/`android` usa
+RevenueCat. El derecho `plus` se concede en la cuenta desde el **webhook de
+RevenueCat** (`/api/revenuecat/webhook`), igual que el de Stripe, así el
+entitlement viaja entre web y app. La compra se ata a la cuenta con
+`Purchases.logIn(userId)` (el `appUserID` de RevenueCat es nuestro `User.id`).
 
-1. Integrar **RevenueCat** (`@revenuecat/purchases-capacitor`), que unifica
-   StoreKit + Play Billing.
-2. Crear los productos de suscripción y compra única en App Store Connect y en
-   Google Play Console, y mapearlos en RevenueCat.
-3. En la app, **detectar plataforma** (`Capacitor.getPlatform()`): en `web` seguir
-   con Stripe; en `ios`/`android` usar RevenueCat.
-4. Conceder el entitlement `plus` desde el webhook de RevenueCat (server-to-server),
-   igual que hoy hace el webhook de Stripe con `User.plus`.
+Para activarlo (cuando prepares el envío a tienda):
 
-Mientras tanto, la app funciona en las tiendas si el acceso a Plus se hace por web
-fuera del flujo nativo, pero **para monetizar en iOS/Android hay que hacer el paso
-de RevenueCat**.
+1. **RevenueCat**: crea un proyecto, añade las apps de iOS y Android, y define un
+   **entitlement** (por defecto lo llamamos `plus`) con sus productos/ofertas.
+2. **App Store Connect / Google Play Console**: crea los productos de
+   suscripción y/o compra única, y enlázalos en RevenueCat.
+3. **Vercel envs**:
+   - `NEXT_PUBLIC_RC_IOS_KEY`, `NEXT_PUBLIC_RC_ANDROID_KEY` — claves **públicas**
+     del SDK (una por tienda).
+   - `NEXT_PUBLIC_RC_ENTITLEMENT` — el id del entitlement si no es `plus`.
+   - `REVENUECAT_WEBHOOK_AUTH` — un valor secreto que tú eliges.
+4. **Webhook en RevenueCat** → `https://<tu-dominio>/api/revenuecat/webhook`, con
+   el header `Authorization` igual a `REVENUECAT_WEBHOOK_AUTH`.
+5. `npm run cap:sync` para instalar el plugin nativo en los proyectos iOS/Android.
+
+Prueba (sandbox de la tienda): entra con tu cuenta → `/plus` en la app nativa →
+compra → el webhook marca `plus` en tu cuenta → la IA y las prácticas Plus quedan
+desbloqueadas (y también en la web con la misma cuenta). «Restaurar compras»
+recupera una compra previa en un dispositivo nuevo.
+
+> La web sigue cobrando por Stripe; el flujo nativo por RevenueCat. Ninguna
+> depende de la otra.
 
 ## Notas
 

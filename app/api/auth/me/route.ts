@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   const session = verifySession(req.cookies.get(SESSION_COOKIE)?.value);
-  if (!session) return NextResponse.json({ email: null, plus: false, plan: null, plusUntil: null });
+  if (!session) return NextResponse.json({ id: null, email: null, plus: false, plan: null, plusUntil: null });
   const ent = await getEntitlement(session);
-  return NextResponse.json({ email: session.email, ...ent });
+  return NextResponse.json({ id: session.uid, email: session.email, ...ent });
 }
