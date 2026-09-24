@@ -5,7 +5,7 @@ import { useRef, useState } from "react";
 import { useStore } from "../providers";
 
 export default function AjustesPage() {
-  const { data, setName, setHabitLabels, importData, resetData, email, syncing, requestLink, logout, syncNow } = useStore();
+  const { data, setName, setHabitLabels, importData, resetData, email, plus, plan, plusUntil, syncing, requestLink, logout, syncNow } = useStore();
   const fileRef = useRef<HTMLInputElement>(null);
   const [msg, setMsg] = useState("");
   const [confirmReset, setConfirmReset] = useState(false);
@@ -91,6 +91,21 @@ export default function AjustesPage() {
           </>
         )}
       </section>
+
+      <Link href="/plus" style={{ textDecoration: "none", borderRadius: 20, padding: "18px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, background: plus ? "rgba(91,140,130,.24)" : "rgba(240,190,140,.16)", border: plus ? "1px solid rgba(143,208,184,.5)" : "1px solid rgba(240,190,140,.4)", WebkitBackdropFilter: "blur(12px)", backdropFilter: "blur(12px)" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          <span style={{ fontSize: 15, fontWeight: 700, color: "#fbfaff" }}>{plus ? "Reflejo Plus ✓" : "✨ Reflejo Plus"}</span>
+          <span style={{ fontSize: 13, color: "#e7e7f0", lineHeight: 1.4 }}>
+            {plus
+              ? plan === "lifetime" ? "Compra única · para siempre"
+                : plan === "cortesía" ? "Acceso de cortesía"
+                : plusUntil ? `Suscripción · renueva el ${new Intl.DateTimeFormat("es-ES", { day: "numeric", month: "short" }).format(new Date(plusUntil))}`
+                : "Suscripción activa"
+              : "IA, conversa con tu diario y herramientas avanzadas"}
+          </span>
+        </div>
+        <span style={{ color: plus ? "#8fd0b8" : "#f0be86", fontSize: 20 }}>{"→"}</span>
+      </Link>
 
       <section className="glass" style={card}>
         <span style={{ fontSize: 15, fontWeight: 600 }}>Nombre</span>

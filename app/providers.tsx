@@ -21,6 +21,8 @@ interface StoreValue {
   resetData: () => void;
   email: string | null;
   plus: boolean;
+  plan: string | null;
+  plusUntil: string | null;
   syncing: boolean;
   requestLink: (email: string) => Promise<{ ok?: boolean; devLink?: string; error?: string }>;
   logout: () => Promise<void>;
@@ -34,6 +36,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
   const [email, setEmail] = useState<string | null>(null);
   const [plus, setPlus] = useState(false);
+  const [plan, setPlan] = useState<string | null>(null);
+  const [plusUntil, setPlusUntil] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
   const dataRef = useRef(data);
   dataRef.current = data;
@@ -163,13 +167,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(async () => {
     try { await fetch("/api/auth/logout", { method: "POST" }); } catch {}
     setEmail(null);
+    setPlus(false);
+    setPlan(null);
+    setPlusUntil(null);
   }, []);
 
   // ¿Hay sesión?
   useEffect(() => {
     fetch("/api/auth/me")
       .then((r) => r.json())
-      .then((j) => { setEmail(j.email ?? null); setPlus(!!j.plus); })
+      .then((j) => { setEmail(j.email ?? null); setPlus(!!j.plus); setPlan(j.plan ?? null); setPlusUntil(j.plusUntil ?? null); })
       .catch(() => {});
   }, []);
 
@@ -183,7 +190,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   return (
     <StoreContext.Provider
-      value={{ data, ready, addEntry, addLog, addPractice, addDecision, reviewDecision, setTodayMood, toggleHabit, setBackground, setName, setHabitLabels, importData, resetData, email, plus, syncing, requestLink, logout, syncNow }}
+      value={{ data, ready, addEntry, addLog, addPractice, addDecision, reviewDecision, setTodayMood, toggleHabit, setBackground, setName, setHabitLabels, importData, resetData, email, plus, plan, plusUntil, syncing, requestLink, logout, syncNow }}
     >
       {children}
     </StoreContext.Provider>
