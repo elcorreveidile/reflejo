@@ -1,4 +1,4 @@
-import type { AppData, JournalEntry, StateLog } from "./types";
+import type { AppData, JournalEntry, StateLog, PracticeLog } from "./types";
 
 const KEY = "reflejo:v1";
 
@@ -6,6 +6,7 @@ export const DEFAULT_DATA: AppData = {
   version: 1,
   entries: [],
   logs: [],
+  practices: [],
   habits: {},
   settings: { name: "", background: "cafe" },
 };
@@ -38,6 +39,7 @@ export function loadData(): AppData {
       settings: { ...DEFAULT_DATA.settings, ...(parsed.settings ?? {}) },
       entries: parsed.entries ?? [],
       logs: parsed.logs ?? [],
+      practices: parsed.practices ?? [],
       habits: parsed.habits ?? {},
     };
   } catch {
@@ -59,6 +61,7 @@ export function computeStreak(data: AppData): number {
   const active = new Set<string>();
   for (const e of data.entries) active.add(e.date);
   for (const l of data.logs) active.add(l.date);
+  for (const p of data.practices) active.add(p.date);
   const today = todayISO();
   let cursor = active.has(today) ? today : addDays(today, -1);
   let streak = 0;
@@ -108,5 +111,9 @@ export function newEntry(prompt: string, text: string, emotion: string | null): 
 }
 
 export function newLog(fields: Partial<StateLog>): StateLog {
+  return { id: uid(), date: todayISO(), createdAt: Date.now(), ...fields };
+}
+
+export function newPractice(fields: { type: "reframe"; thought: string; lens: string; reframe: string }): PracticeLog {
   return { id: uid(), date: todayISO(), createdAt: Date.now(), ...fields };
 }

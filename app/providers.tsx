@@ -2,13 +2,14 @@
 
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react";
 import type { AppData, BackgroundId } from "@/lib/types";
-import { DEFAULT_DATA, loadData, saveData, newEntry, newLog, todayISO } from "@/lib/store";
+import { DEFAULT_DATA, loadData, saveData, newEntry, newLog, newPractice, todayISO } from "@/lib/store";
 
 interface StoreValue {
   data: AppData;
   ready: boolean;
   addEntry: (prompt: string, text: string, emotion: string | null) => void;
   addLog: (fields: { animo?: number; energia?: number; foco?: number; moment?: number }) => void;
+  addPractice: (fields: { type: "reframe"; thought: string; lens: string; reframe: string }) => void;
   setTodayMood: (animo: number) => void;
   toggleHabit: (index: number) => void;
   setBackground: (bg: BackgroundId, customBg?: string) => void;
@@ -41,6 +42,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const addLog = useCallback((fields: { animo?: number; energia?: number; foco?: number; moment?: number }) => {
     mutate((prev) => ({ ...prev, logs: [...prev.logs, newLog(fields)] }));
+  }, [mutate]);
+
+  const addPractice = useCallback((fields: { type: "reframe"; thought: string; lens: string; reframe: string }) => {
+    mutate((prev) => ({ ...prev, practices: [...prev.practices, newPractice(fields)] }));
   }, [mutate]);
 
   const setTodayMood = useCallback((animo: number) => {
@@ -78,7 +83,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   return (
     <StoreContext.Provider
-      value={{ data, ready, addEntry, addLog, setTodayMood, toggleHabit, setBackground, setName }}
+      value={{ data, ready, addEntry, addLog, addPractice, setTodayMood, toggleHabit, setBackground, setName }}
     >
       {children}
     </StoreContext.Provider>

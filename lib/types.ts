@@ -19,6 +19,16 @@ export interface StateLog {
   createdAt: number;
 }
 
+export interface PracticeLog {
+  id: string;
+  date: string; // YYYY-MM-DD (local)
+  type: "reframe";
+  thought: string;
+  lens: string;
+  reframe: string;
+  createdAt: number;
+}
+
 export interface Settings {
   name: string;
   background: BackgroundId;
@@ -29,8 +39,16 @@ export interface AppData {
   version: 1;
   entries: JournalEntry[];
   logs: StateLog[];
+  practices: PracticeLog[];
   habits: Record<string, boolean[]>; // date -> [meditar, leer, diario, caminar]
   settings: Settings;
 }
+
+export const LENSES = [
+  "Una prueba real que lo respalde",
+  "Otra explicación posible",
+  "El punto de vista del otro",
+  "Un dato que lo contradiga",
+];
 
 export const HABIT_LABELS = ["Meditar 10 min", "Leer", "Escribir diario", "Caminar 30 min"];
