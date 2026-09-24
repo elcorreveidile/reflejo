@@ -176,10 +176,10 @@ export default function HoyPage() {
         </div>
       </section>
 
-      <Link href="/estados" className="glass" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, borderRadius: 16, padding: 16 }}>
+      <Link href="/patrones" className="glass" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, borderRadius: 16, padding: 16 }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-          <span style={{ fontSize: 14, fontWeight: 600 }}>Tu semana en estados</span>
-          <span style={{ fontSize: 12, lineHeight: 1.35, color: "#cfd2e4" }}>Registra ánimo, energía y foco</span>
+          <span style={{ fontSize: 14, fontWeight: 600 }}>Tus patrones</span>
+          <span style={{ fontSize: 12, lineHeight: 1.35, color: "#cfd2e4" }}>Tendencias, mapa de ánimo e insights</span>
         </div>
         <span style={{ color: "#f0be86", fontSize: 20 }}>{"→"}</span>
       </Link>

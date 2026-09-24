@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useStore } from "../providers";
 import { recentSeries } from "@/lib/store";
@@ -76,7 +77,10 @@ export default function EstadosPage() {
       </button>
 
       <section className="glass" style={{ borderRadius: 20, padding: 16, display: "flex", flexDirection: "column", gap: 16 }}>
-        <span style={{ fontSize: 14, fontWeight: 600 }}>Esta semana</span>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span style={{ fontSize: 14, fontWeight: 600 }}>Esta semana</span>
+          <Link href="/patrones" style={{ fontSize: 13, color: "#f0be86", fontWeight: 600 }}>Ver patrones {"→"}</Link>
+        </div>
         {DIMS.map((d) => (
           <div key={d.key} style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <span style={{ width: 62, fontSize: 13, color: "#cfd2e4" }}>{d.name}</span>
