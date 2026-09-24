@@ -10,13 +10,41 @@ function shortDate(iso: string): string {
 }
 
 export default function DiarioPage() {
-  const { data, addEntry } = useStore();
+  const { data, addEntry, plus } = useStore();
   const [offset, setOffset] = useState(0);
   const [text, setText] = useState("");
   const [emotion, setEmotion] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState<string | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiNote, setAiNote] = useState("");
 
-  const prompt = promptForToday(offset);
+  const prompt = aiPrompt ?? promptForToday(offset);
+
+  async function generateAi() {
+    if (!plus) { setAiNote("La pregunta con IA es parte de Reflejo Plus."); return; }
+    setAiLoading(true);
+    setAiNote("");
+    const moodVals = data.logs.map((l) => l.animo).filter((x): x is number => typeof x === "number");
+    const moodAvg = moodVals.length ? moodVals.reduce((a, b) => a + b, 0) / moodVals.length : null;
+    try {
+      const res = await fetch("/api/ai", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ mode: "prompt", context: { entries: data.entries.slice(-6).map((e) => e.text), moodAvg } }),
+      });
+      const j = await res.json();
+      if (j.text) setAiPrompt(j.text);
+      else if (j.error === "no-ai") setAiNote("El asistente de IA aún no está configurado.");
+      else if (j.error === "auth") setAiNote("Entra con tu cuenta para usar la IA.");
+      else if (j.error === "plus") setAiNote("La pregunta con IA es parte de Reflejo Plus.");
+      else setAiNote("No se pudo generar ahora. Inténtalo de nuevo.");
+    } catch {
+      setAiNote("Sin conexión con la IA.");
+    } finally {
+      setAiLoading(false);
+    }
+  }
   const recent = sortByNewest(data.entries).slice(0, 5);
 
   function onSave() {
@@ -32,12 +60,18 @@ export default function DiarioPage() {
     <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
       <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <span style={{ fontSize: 12, letterSpacing: ".14em", textTransform: "uppercase", color: "#cfd2e4", fontWeight: 600 }}>Diario</span>
-        <button onClick={() => setOffset((o) => o + 1)} style={{ background: "none", border: "none", color: "#f0be86", fontSize: 13, fontWeight: 600 }}>
-          Otra pregunta
-        </button>
+        <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
+          <button onClick={generateAi} disabled={aiLoading} style={{ background: "none", border: "none", color: plus ? "#f0be86" : "#8f93ad", fontSize: 13, fontWeight: 600 }}>
+            {aiLoading ? "Pensando…" : "✨ IA"}
+          </button>
+          <button onClick={() => { setAiPrompt(null); setAiNote(""); setOffset((o) => o + 1); }} style={{ background: "none", border: "none", color: "#f0be86", fontSize: 13, fontWeight: 600 }}>
+            Otra pregunta
+          </button>
+        </div>
       </header>
 
       <span className="serif" style={{ fontSize: 25, lineHeight: 1.22, fontWeight: 500, color: "#fbfaff" }}>{prompt}</span>
+      {aiNote && <span style={{ fontSize: 12, color: "#f1d6a8", lineHeight: 1.4, marginTop: -8 }}>{aiNote}</span>}
 
       <textarea
         value={text}

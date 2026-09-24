@@ -20,6 +20,7 @@ interface StoreValue {
   importData: (parsed: Partial<AppData>) => void;
   resetData: () => void;
   email: string | null;
+  plus: boolean;
   syncing: boolean;
   requestLink: (email: string) => Promise<{ ok?: boolean; devLink?: string; error?: string }>;
   logout: () => Promise<void>;
@@ -32,6 +33,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<AppData>(DEFAULT_DATA);
   const [ready, setReady] = useState(false);
   const [email, setEmail] = useState<string | null>(null);
+  const [plus, setPlus] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const dataRef = useRef(data);
   dataRef.current = data;
@@ -167,7 +169,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     fetch("/api/auth/me")
       .then((r) => r.json())
-      .then((j) => setEmail(j.email ?? null))
+      .then((j) => { setEmail(j.email ?? null); setPlus(!!j.plus); })
       .catch(() => {});
   }, []);
 
@@ -181,7 +183,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   return (
     <StoreContext.Provider
-      value={{ data, ready, addEntry, addLog, addPractice, addDecision, reviewDecision, setTodayMood, toggleHabit, setBackground, setName, setHabitLabels, importData, resetData, email, syncing, requestLink, logout, syncNow }}
+      value={{ data, ready, addEntry, addLog, addPractice, addDecision, reviewDecision, setTodayMood, toggleHabit, setBackground, setName, setHabitLabels, importData, resetData, email, plus, syncing, requestLink, logout, syncNow }}
     >
       {children}
     </StoreContext.Provider>

@@ -10,6 +10,7 @@ datasource db {
 model User {
   id        String              @id @default(cuid())
   email     String              @unique
+  plus      Boolean             @default(false)
   createdAt DateTime            @default(now())
   tokens    VerificationToken[]
   sync      SyncState?

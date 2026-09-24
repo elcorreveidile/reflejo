@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { useStore } from "../providers";
 import { computeStreak, recentSeries, isoInDays } from "@/lib/store";
 import type { AppData } from "@/lib/types";
@@ -45,7 +46,10 @@ function insights(data: AppData): string[] {
 }
 
 export default function PatronesPage() {
-  const { data } = useStore();
+  const { data, plus } = useStore();
+  const [summary, setSummary] = useState<string | null>(null);
+  const [sumLoading, setSumLoading] = useState(false);
+  const [sumNote, setSumNote] = useState("");
 
   const streak = computeStreak(data);
   const series = recentSeries(data, 14);
@@ -78,6 +82,29 @@ export default function PatronesPage() {
 
   const list = insights(data);
   const hasData = data.entries.length + data.logs.length + data.practices.length + data.decisions.length > 0;
+
+  async function generateSummary() {
+    if (!plus) { setSumNote("El resumen con IA es parte de Reflejo Plus."); return; }
+    setSumLoading(true);
+    setSumNote("");
+    try {
+      const res = await fetch("/api/ai", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ mode: "summary", context: { entries: data.entries.slice(-6).map((e) => e.text), moodAvg: animoAvg } }),
+      });
+      const j = await res.json();
+      if (j.text) setSummary(j.text);
+      else if (j.error === "no-ai") setSumNote("El asistente de IA aún no está configurado.");
+      else if (j.error === "auth") setSumNote("Entra con tu cuenta para usar la IA.");
+      else if (j.error === "plus") setSumNote("El resumen con IA es parte de Reflejo Plus.");
+      else setSumNote("No se pudo generar ahora. Inténtalo de nuevo.");
+    } catch {
+      setSumNote("Sin conexión con la IA.");
+    } finally {
+      setSumLoading(false);
+    }
+  }
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
@@ -112,6 +139,21 @@ export default function PatronesPage() {
               </div>
             ))}
           </div>
+
+          {/* Resumen con IA (Reflejo Plus) */}
+          <section style={{ borderRadius: 20, padding: 18, display: "flex", flexDirection: "column", gap: 12, background: "rgba(62,76,126,.28)", border: "1px solid rgba(154,166,224,.4)", WebkitBackdropFilter: "blur(12px)", backdropFilter: "blur(12px)" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+              <span style={{ fontSize: 15, fontWeight: 600 }}>Resumen con IA</span>
+              <button onClick={generateSummary} disabled={sumLoading} style={{ background: "#9aa6e0", color: "#141628", border: "none", padding: "9px 14px", borderRadius: 999, fontSize: 13, fontWeight: 600, opacity: sumLoading ? 0.6 : 1 }}>
+                {sumLoading ? "Pensando…" : plus ? "Generar" : "✨ Plus"}
+              </button>
+            </div>
+            {summary ? (
+              <p style={{ margin: 0, fontSize: 14, lineHeight: 1.55, color: "#f5f3fb" }}>{summary}</p>
+            ) : (
+              <span style={{ fontSize: 13, color: "#cfd2e4", lineHeight: 1.45 }}>{sumNote || "Un vistazo honesto a tu diario y tus estados de los últimos días, escrito por la IA."}</span>
+            )}
+          </section>
 
           {/* Líneas */}
           <section className="glass" style={{ borderRadius: 20, padding: 18, display: "flex", flexDirection: "column", gap: 14 }}>
