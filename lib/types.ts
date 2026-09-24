@@ -41,6 +41,7 @@ export interface Decision {
   outcome: string | null; // null = pendiente
   learning: string;
   reviewedAt: number | null;
+  premortem?: string; // Plus: por qué podría salir mal
   createdAt: number;
 }
 
