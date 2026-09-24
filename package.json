@@ -13,6 +13,7 @@
     "cap:sync": "cap sync",
     "cap:add:ios": "cap add ios",
     "cap:add:android": "cap add android",
+    "assets:generate": "capacitor-assets generate --iconBackgroundColor '#141628' --iconBackgroundColorDark '#141628' --splashBackgroundColor '#141628' --splashBackgroundColorDark '#141628'",
     "cap:ios": "cap open ios",
     "cap:android": "cap open android"
   },
@@ -30,6 +31,7 @@
     "stripe": "^17.7.0"
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^6.2.2",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
