@@ -6,6 +6,7 @@ import { useStore } from "./providers";
 import { BACKGROUNDS, backgroundThumb } from "@/lib/backgrounds";
 import { computeStreak, todayISO } from "@/lib/store";
 import { promptForToday } from "@/lib/prompts";
+import { fileToScaledDataUrl } from "@/lib/image";
 import type { BackgroundId } from "@/lib/types";
 
 const MOODS = ["Bajo", "Flojo", "Normal", "Bien", "Pleno"];
@@ -38,12 +39,12 @@ export default function HoyPage() {
   const mood = todayLog?.animo ?? null;
   const habitsToday = data.habits[today] ?? [false, false, false, false];
 
-  function onPickFile(e: React.ChangeEvent<HTMLInputElement>) {
+  async function onPickFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => setBackground("custom", String(reader.result));
-    reader.readAsDataURL(file);
+    const url = await fileToScaledDataUrl(file);
+    setBackground("custom", url);
+    e.target.value = "";
   }
 
   const options: BackgroundId[] = [...BACKGROUNDS.map((b) => b.id)];

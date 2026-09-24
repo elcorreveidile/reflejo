@@ -1,5 +1,8 @@
-const CACHE = "reflejo-v1";
-const CORE = ["/", "/diario", "/estados", "/practicas", "/decisiones", "/manifest.webmanifest", "/icon.svg"];
+const CACHE = "reflejo-v2";
+const CORE = [
+  "/", "/diario", "/estados", "/practicas", "/decisiones", "/patrones", "/ajustes",
+  "/manifest.webmanifest", "/icon.svg", "/icons/icon-192.png", "/icons/icon-512.png",
+];
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
