@@ -8,12 +8,15 @@ datasource db {
 }
 
 model User {
-  id        String              @id @default(cuid())
-  email     String              @unique
-  plus      Boolean             @default(false)
-  createdAt DateTime            @default(now())
-  tokens    VerificationToken[]
-  sync      SyncState?
+  id               String              @id @default(cuid())
+  email            String              @unique
+  plus             Boolean             @default(false)
+  plan             String? // "sub" | "lifetime" | null
+  plusUntil        DateTime? // fin del periodo de suscripción; null en compra única
+  stripeCustomerId String?             @unique
+  createdAt        DateTime            @default(now())
+  tokens           VerificationToken[]
+  sync             SyncState?
 }
 
 model VerificationToken {

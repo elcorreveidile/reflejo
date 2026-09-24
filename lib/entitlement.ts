@@ -1,19 +1,38 @@
 import { prisma } from "./db";
 import type { SessionPayload } from "./session";
 
-// Reflejo Plus. Hoy se concede por lista de emails (para pruebas sin cobro) o por
-// el campo User.plus (que activará el cobro cuando lo conectemos con Stripe/RevenueCat).
-export async function isPlus(session: SessionPayload | null): Promise<boolean> {
-  if (!session) return false;
-  const allow = (process.env.PREMIUM_EMAILS || "")
+export interface Entitlement {
+  plus: boolean;
+  plan: string | null; // "sub" | "lifetime" | "cortesía" | null
+  plusUntil: string | null; // ISO
+}
+
+function allowList(): string[] {
+  return (process.env.PREMIUM_EMAILS || "")
     .split(",")
     .map((s) => s.trim().toLowerCase())
     .filter(Boolean);
-  if (allow.includes(session.email.toLowerCase())) return true;
+}
+
+// Reflejo Plus. Se concede por compra en Stripe (User.plus, que mantiene el webhook)
+// o por lista de emails de cortesía (regalos / pruebas sin cobro).
+export async function getEntitlement(session: SessionPayload | null): Promise<Entitlement> {
+  if (!session) return { plus: false, plan: null, plusUntil: null };
+  const courtesy = allowList().includes(session.email.toLowerCase());
+  let u: { plus: boolean; plan: string | null; plusUntil: Date | null } | null = null;
   try {
-    const u = await prisma.user.findUnique({ where: { id: session.uid }, select: { plus: true } });
-    return !!u?.plus;
+    u = await prisma.user.findUnique({
+      where: { id: session.uid },
+      select: { plus: true, plan: true, plusUntil: true },
+    });
   } catch {
-    return false;
+    u = null;
   }
+  const plus = courtesy || !!u?.plus;
+  const plan = u?.plan ?? (courtesy ? "cortesía" : null);
+  return { plus, plan, plusUntil: u?.plusUntil ? u.plusUntil.toISOString() : null };
+}
+
+export async function isPlus(session: SessionPayload | null): Promise<boolean> {
+  return (await getEntitlement(session)).plus;
 }

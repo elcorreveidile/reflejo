@@ -70,10 +70,10 @@ export default function ConversarPage() {
         <section style={{ borderRadius: 20, padding: 18, display: "flex", flexDirection: "column", gap: 10, background: "rgba(62,76,126,.28)", border: "1px solid rgba(154,166,224,.4)", WebkitBackdropFilter: "blur(12px)", backdropFilter: "blur(12px)" }}>
           <span style={{ fontSize: 15, fontWeight: 700, color: "#fbfaff" }}>✨ Reflejo Plus</span>
           <span style={{ fontSize: 14, lineHeight: 1.5, color: "#e7e7f0" }}>
-            Conversa con tu propio diario: la IA responde a partir de lo que has escrito y de tus estados, para ayudarte a ver patrones y decidir. {email ? "Tu cuenta aún no tiene Plus." : "Entra con tu cuenta desde Ajustes para activarlo."}
+            Conversa con tu propio diario: la IA responde a partir de lo que has escrito y de tus estados, para ayudarte a ver patrones y decidir. {email ? "Tu cuenta aún no tiene Plus." : "Necesitas una cuenta para activarlo."}
           </span>
-          <Link href="/ajustes" style={{ alignSelf: "flex-start", background: "#9aa6e0", color: "#141628", padding: "10px 16px", borderRadius: 999, fontSize: 13, fontWeight: 700 }}>
-            {email ? "Gestionar cuenta" : "Entrar / Ajustes"}
+          <Link href={email ? "/plus" : "/ajustes"} style={{ alignSelf: "flex-start", background: "#9aa6e0", color: "#141628", padding: "10px 16px", borderRadius: 999, fontSize: 13, fontWeight: 700 }}>
+            {email ? "Ver Reflejo Plus" : "Entrar / Ajustes"}
           </Link>
         </section>
       )}
