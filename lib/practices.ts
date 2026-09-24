@@ -56,7 +56,7 @@ export const EXERCISES: Exercise[] = [
     capacity: "creatividad",
     title: "Diez ideas en dos minutos",
     intro: "Cantidad antes que calidad: llena la página sin juzgar.",
-    plus: true,
+    plus: false,
     steps: [
       { key: "reto", prompt: "¿Para qué necesitas ideas?", placeholder: "Un problema, un proyecto, un regalo…" },
       { key: "ideas", prompt: "Escribe diez ideas, rápido y sin filtrar.", placeholder: "1. …\n2. …\n3. …" },
@@ -79,7 +79,7 @@ export const EXERCISES: Exercise[] = [
     capacity: "liderazgo",
     title: "Influir es invitar, no imponer",
     intro: "Mueve a alguien hacia algo bueno, desde su interés.",
-    plus: true,
+    plus: false,
     steps: [
       { key: "cambio", prompt: "¿Qué te gustaría que alguien hiciera?", placeholder: "Una persona o un equipo." },
       { key: "beneficio", prompt: "¿Por qué es bueno para esa persona, no solo para ti?", placeholder: "Ponte en su lugar." },
@@ -103,7 +103,7 @@ export const EXERCISES: Exercise[] = [
     capacity: "autoconocimiento",
     title: "Tus valores en acción",
     intro: "Debajo de lo que te importa hay un valor tuyo.",
-    plus: true,
+    plus: false,
     steps: [
       { key: "momento", prompt: "Un momento reciente que te importó.", placeholder: "Bueno o difícil." },
       { key: "valor", prompt: "¿Qué valor tuyo había detrás?", placeholder: "Honestidad, cuidado, libertad…" },
