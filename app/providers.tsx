@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, useCallback, type ReactNode } from "react";
 import type { AppData, BackgroundId } from "@/lib/types";
 import { DEFAULT_DATA, loadData, saveData, newEntry, newLog, newPractice, newDecision, normalize, todayISO } from "@/lib/store";
 
@@ -19,6 +19,11 @@ interface StoreValue {
   setHabitLabels: (labels: string[]) => void;
   importData: (parsed: Partial<AppData>) => void;
   resetData: () => void;
+  email: string | null;
+  syncing: boolean;
+  requestLink: (email: string) => Promise<{ ok?: boolean; devLink?: string; error?: string }>;
+  logout: () => Promise<void>;
+  syncNow: () => Promise<void>;
 }
 
 const StoreContext = createContext<StoreValue | null>(null);
@@ -26,6 +31,11 @@ const StoreContext = createContext<StoreValue | null>(null);
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<AppData>(DEFAULT_DATA);
   const [ready, setReady] = useState(false);
+  const [email, setEmail] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
+  const dataRef = useRef(data);
+  dataRef.current = data;
+  const lastSyncRef = useRef<string>("");
 
   useEffect(() => {
     setData(loadData());
@@ -112,9 +122,66 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     mutate(() => ({ ...DEFAULT_DATA, settings: { ...DEFAULT_DATA.settings, habitLabels: [...DEFAULT_DATA.settings.habitLabels] } }));
   }, [mutate]);
 
+  // --- Sincronización en la nube (local-first: se fusiona, nunca pisa) ---
+  const syncNow = useCallback(async () => {
+    setSyncing(true);
+    try {
+      const res = await fetch("/api/sync", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ data: dataRef.current }),
+      });
+      if (res.ok) {
+        const j = await res.json();
+        const merged = normalize(j.data);
+        lastSyncRef.current = JSON.stringify(merged);
+        saveData(merged);
+        setData(merged);
+      }
+    } catch {
+      /* sin conexión: la app sigue en local */
+    } finally {
+      setSyncing(false);
+    }
+  }, []);
+
+  const requestLink = useCallback(async (em: string) => {
+    try {
+      const res = await fetch("/api/auth/request", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email: em }),
+      });
+      return (await res.json()) as { ok?: boolean; devLink?: string; error?: string };
+    } catch {
+      return { error: "network" };
+    }
+  }, []);
+
+  const logout = useCallback(async () => {
+    try { await fetch("/api/auth/logout", { method: "POST" }); } catch {}
+    setEmail(null);
+  }, []);
+
+  // ¿Hay sesión?
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((j) => setEmail(j.email ?? null))
+      .catch(() => {});
+  }, []);
+
+  // Sincroniza (con rebote) cuando cambian los datos y hay sesión.
+  useEffect(() => {
+    if (!email || !ready) return;
+    if (JSON.stringify(data) === lastSyncRef.current) return;
+    const t = setTimeout(() => { syncNow(); }, 1500);
+    return () => clearTimeout(t);
+  }, [data, email, ready, syncNow]);
+
   return (
     <StoreContext.Provider
-      value={{ data, ready, addEntry, addLog, addPractice, addDecision, reviewDecision, setTodayMood, toggleHabit, setBackground, setName, setHabitLabels, importData, resetData }}
+      value={{ data, ready, addEntry, addLog, addPractice, addDecision, reviewDecision, setTodayMood, toggleHabit, setBackground, setName, setHabitLabels, importData, resetData, email, syncing, requestLink, logout, syncNow }}
     >
       {children}
     </StoreContext.Provider>

@@ -5,10 +5,23 @@ import { useRef, useState } from "react";
 import { useStore } from "../providers";
 
 export default function AjustesPage() {
-  const { data, setName, setHabitLabels, importData, resetData } = useStore();
+  const { data, setName, setHabitLabels, importData, resetData, email, syncing, requestLink, logout, syncNow } = useStore();
   const fileRef = useRef<HTMLInputElement>(null);
   const [msg, setMsg] = useState("");
   const [confirmReset, setConfirmReset] = useState(false);
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginMsg, setLoginMsg] = useState("");
+  const [devLink, setDevLink] = useState("");
+
+  async function sendLink() {
+    if (!loginEmail.trim().includes("@")) { setLoginMsg("Escribe un email válido"); return; }
+    setLoginMsg("Enviando…");
+    setDevLink("");
+    const r = await requestLink(loginEmail.trim());
+    if (r.devLink) { setDevLink(r.devLink); setLoginMsg("Enlace listo (modo desarrollo):"); }
+    else if (r.ok) setLoginMsg("Te hemos enviado un enlace a tu correo. Revisa la bandeja.");
+    else setLoginMsg("No se pudo enviar el enlace. Inténtalo de nuevo.");
+  }
 
   const labels = data.settings.habitLabels;
 
@@ -55,6 +68,29 @@ export default function AjustesPage() {
         <span style={{ fontSize: 12, letterSpacing: ".14em", textTransform: "uppercase", color: "#cfd2e4", fontWeight: 600 }}>Ajustes</span>
         <span className="serif" style={{ fontSize: 27, lineHeight: 1.1, fontWeight: 500, color: "#fbfaff" }}>Tu perfil</span>
       </header>
+
+      <section style={{ borderRadius: 20, padding: "18px 16px", display: "flex", flexDirection: "column", gap: 14, background: "rgba(62,76,126,.28)", border: "1px solid rgba(154,166,224,.4)", WebkitBackdropFilter: "blur(12px)", backdropFilter: "blur(12px)" }}>
+        <span style={{ fontSize: 15, fontWeight: 600 }}>Sincronización</span>
+        {email ? (
+          <>
+            <span style={{ fontSize: 13, color: "#cfd2e4" }}>Sesión iniciada como <b style={{ color: "#fbfaff" }}>{email}</b>. Tus datos se guardan en la nube y se sincronizan solos entre tus dispositivos.</span>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={syncNow} disabled={syncing} style={{ flex: 1, background: "#9aa6e0", color: "#141628", border: "none", padding: 12, borderRadius: 12, fontSize: 14, fontWeight: 600, opacity: syncing ? 0.6 : 1 }}>{syncing ? "Sincronizando…" : "Sincronizar ahora"}</button>
+              <button onClick={logout} style={{ flex: 1, background: "rgba(255,255,255,.10)", color: "#f5f3fb", border: "1px solid rgba(255,255,255,.22)", padding: 12, borderRadius: 12, fontSize: 14, fontWeight: 600 }}>Cerrar sesión</button>
+            </div>
+          </>
+        ) : (
+          <>
+            <span style={label}>Entra con tu email para que tus datos te sigan entre el móvil y el escritorio. Te enviamos un enlace, sin contraseñas.</span>
+            <div style={{ display: "flex", gap: 8 }}>
+              <input type="email" inputMode="email" autoComplete="email" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} placeholder="tu@email.com" style={{ ...field, flex: 1 }} />
+              <button onClick={sendLink} style={{ flexShrink: 0, background: "#9aa6e0", color: "#141628", border: "none", padding: "12px 16px", borderRadius: 12, fontSize: 14, fontWeight: 600 }}>Enviar enlace</button>
+            </div>
+            {loginMsg && <span style={{ fontSize: 13, color: "#cfd2e4" }}>{loginMsg}</span>}
+            {devLink && <a href={devLink} style={{ fontSize: 13, color: "#f0be86", fontWeight: 600, wordBreak: "break-all" }}>{devLink}</a>}
+          </>
+        )}
+      </section>
 
       <section className="glass" style={card}>
         <span style={{ fontSize: 15, fontWeight: 600 }}>Nombre</span>
@@ -105,7 +141,7 @@ export default function AjustesPage() {
         )}
       </section>
 
-      <span style={{ fontSize: 12, color: "#8a8ca0", textAlign: "center", paddingBottom: 8 }}>Reflejo · local-first · sin cuenta ni servidor</span>
+      <span style={{ fontSize: 12, color: "#8a8ca0", textAlign: "center", paddingBottom: 8 }}>Reflejo · local-first · funciona sin conexión y sincroniza si quieres</span>
     </div>
   );
 }
