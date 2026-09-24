@@ -1,4 +1,4 @@
-import type { AppData, JournalEntry, StateLog, PracticeLog, Decision } from "./types";
+import type { AppData, JournalEntry, StateLog, PracticeLog, Decision, Capacity } from "./types";
 import { HABIT_LABELS } from "./types";
 
 const KEY = "reflejo:v1";
@@ -129,7 +129,7 @@ export function newLog(fields: Partial<StateLog>): StateLog {
   return { id: uid(), date: todayISO(), createdAt: Date.now(), ...fields };
 }
 
-export function newPractice(fields: { type: "reframe"; thought: string; lens: string; reframe: string }): PracticeLog {
+export function newPractice(fields: { exercise: string; capacity: Capacity; title: string; fields: Record<string, string> }): PracticeLog {
   return { id: uid(), date: todayISO(), createdAt: Date.now(), ...fields };
 }
 

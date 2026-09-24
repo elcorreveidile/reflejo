@@ -41,7 +41,7 @@ function insights(data: AppData): string[] {
   const rev = data.decisions.filter((d) => d.outcome).length;
   if (rev > 0) out.push(`Has cerrado el círculo en ${rev} ${rev === 1 ? "decisión" : "decisiones"}.`);
   // Reencuadres
-  if (data.practices.length > 0) out.push(`Llevas ${data.practices.length} ${data.practices.length === 1 ? "reencuadre guardado" : "reencuadres guardados"}.`);
+  if (data.practices.length > 0) out.push(`Llevas ${data.practices.length} ${data.practices.length === 1 ? "práctica completada" : "prácticas completadas"}.`);
   return out;
 }
 

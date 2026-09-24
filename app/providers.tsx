@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useRef, useState, useCallback, type ReactNode } from "react";
-import type { AppData, BackgroundId } from "@/lib/types";
+import type { AppData, BackgroundId, Capacity } from "@/lib/types";
 import { DEFAULT_DATA, loadData, saveData, newEntry, newLog, newPractice, newDecision, normalize, todayISO } from "@/lib/store";
 
 interface StoreValue {
@@ -9,7 +9,7 @@ interface StoreValue {
   ready: boolean;
   addEntry: (prompt: string, text: string, emotion: string | null) => void;
   addLog: (fields: { animo?: number; energia?: number; foco?: number; moment?: number }) => void;
-  addPractice: (fields: { type: "reframe"; thought: string; lens: string; reframe: string }) => void;
+  addPractice: (fields: { exercise: string; capacity: Capacity; title: string; fields: Record<string, string> }) => void;
   addDecision: (fields: { title: string; confidence: number; reviewInDays: number }) => void;
   reviewDecision: (id: string, outcome: string, learning: string) => void;
   setTodayMood: (animo: number) => void;
@@ -61,7 +61,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     mutate((prev) => ({ ...prev, logs: [...prev.logs, newLog(fields)] }));
   }, [mutate]);
 
-  const addPractice = useCallback((fields: { type: "reframe"; thought: string; lens: string; reframe: string }) => {
+  const addPractice = useCallback((fields: { exercise: string; capacity: Capacity; title: string; fields: Record<string, string> }) => {
     mutate((prev) => ({ ...prev, practices: [...prev.practices, newPractice(fields)] }));
   }, [mutate]);
 
