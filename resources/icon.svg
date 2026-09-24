@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-label="Reflejo">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#242a52"/>
+      <stop offset="0.55" stop-color="#181c38"/>
+      <stop offset="1" stop-color="#101226"/>
+    </linearGradient>
+    <radialGradient id="orb" cx="0.4" cy="0.35" r="0.75">
+      <stop offset="0" stop-color="#ffe6c2"/>
+      <stop offset="0.45" stop-color="#f4c78f"/>
+      <stop offset="1" stop-color="#d99a53"/>
+    </radialGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#f0be86" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#f0be86" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+
+  <!-- halo -->
+  <circle cx="512" cy="404" r="300" fill="url(#glow)"/>
+
+  <!-- orbe -->
+  <circle cx="512" cy="404" r="176" fill="url(#orb)"/>
+  <!-- brillo tenue del orbe -->
+  <circle cx="452" cy="348" r="60" fill="#fff3e2" opacity="0.55"/>
+
+  <!-- reflejo: ondas que se desvanecen -->
+  <ellipse cx="512" cy="628" rx="176" ry="52" fill="#f0be86" opacity="0.38"/>
+  <ellipse cx="512" cy="712" rx="132" ry="34" fill="#f0be86" opacity="0.22"/>
+  <ellipse cx="512" cy="778" rx="92"  ry="22" fill="#f0be86" opacity="0.12"/>
+  <ellipse cx="512" cy="828" rx="56"  ry="13" fill="#f0be86" opacity="0.07"/>
+</svg>

@@ -85,5 +85,22 @@ recupera una compra previa en un dispositivo nuevo.
 
 - La versión de Capacitor está fijada en la línea **6** (estable y ampliamente
   soportada). Actualizar a la 8 es un salto mayor que se hará aparte.
-- Los iconos/splash nativos se generan con `@capacitor/assets` a partir de un
-  icono base cuando preparemos el envío a tienda.
+## Iconos y splash
+
+La marca base vive en `resources/` (fuente de verdad, versionada):
+
+- `resources/icon.svg` / `resources/icon.png` (1024×1024) — el icono (orbe dorado
+  y su reflejo sobre índigo).
+- `resources/splash.svg` / `resources/splash.png` / `resources/splash-dark.png`
+  (2732×2732) — pantalla de carga con el logo y «Reflejo».
+
+Tras generar los proyectos nativos, crea todos los tamaños de icono y splash de
+iOS/Android con un comando:
+
+```bash
+npm run assets:generate      # usa resources/ → escribe en /ios y /android
+```
+
+(Usa `@capacitor/assets`; el fondo va fijado al índigo de marca `#141628`.) Si
+editas el `.svg`, vuelve a exportar el `.png` del mismo tamaño y repite el comando.
+Los iconos del PWA (`public/icons/*`) ya están regenerados con la misma marca.
