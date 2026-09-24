@@ -29,6 +29,27 @@ export interface PracticeLog {
   createdAt: number;
 }
 
+export interface Decision {
+  id: string;
+  date: string; // YYYY-MM-DD (creación)
+  title: string;
+  confidence: number; // 1..5
+  reviewInDays: number;
+  reviewAt: string; // YYYY-MM-DD en que toca revisar
+  outcome: string | null; // null = pendiente
+  learning: string;
+  reviewedAt: number | null;
+  createdAt: number;
+}
+
+export const OUTCOMES = ["Mejor", "Como esperaba", "Peor"];
+
+export const PLAZOS: { label: string; days: number }[] = [
+  { label: "3 días", days: 3 },
+  { label: "1 semana", days: 7 },
+  { label: "1 mes", days: 30 },
+];
+
 export interface Settings {
   name: string;
   background: BackgroundId;
@@ -40,6 +61,7 @@ export interface AppData {
   entries: JournalEntry[];
   logs: StateLog[];
   practices: PracticeLog[];
+  decisions: Decision[];
   habits: Record<string, boolean[]>; // date -> [meditar, leer, diario, caminar]
   settings: Settings;
 }

@@ -1,4 +1,4 @@
-import type { AppData, JournalEntry, StateLog, PracticeLog } from "./types";
+import type { AppData, JournalEntry, StateLog, PracticeLog, Decision } from "./types";
 
 const KEY = "reflejo:v1";
 
@@ -7,6 +7,7 @@ export const DEFAULT_DATA: AppData = {
   entries: [],
   logs: [],
   practices: [],
+  decisions: [],
   habits: {},
   settings: { name: "", background: "cafe" },
 };
@@ -40,6 +41,7 @@ export function loadData(): AppData {
       entries: parsed.entries ?? [],
       logs: parsed.logs ?? [],
       practices: parsed.practices ?? [],
+      decisions: parsed.decisions ?? [],
       habits: parsed.habits ?? {},
     };
   } catch {
@@ -62,6 +64,10 @@ export function computeStreak(data: AppData): number {
   for (const e of data.entries) active.add(e.date);
   for (const l of data.logs) active.add(l.date);
   for (const p of data.practices) active.add(p.date);
+  for (const d of data.decisions) {
+    active.add(d.date);
+    if (d.reviewedAt) active.add(todayISO(new Date(d.reviewedAt)));
+  }
   const today = todayISO();
   let cursor = active.has(today) ? today : addDays(today, -1);
   let streak = 0;
@@ -116,4 +122,29 @@ export function newLog(fields: Partial<StateLog>): StateLog {
 
 export function newPractice(fields: { type: "reframe"; thought: string; lens: string; reframe: string }): PracticeLog {
   return { id: uid(), date: todayISO(), createdAt: Date.now(), ...fields };
+}
+
+export function isoInDays(days: number): string {
+  return addDays(todayISO(), days);
+}
+
+export function daysSince(iso: string): number {
+  const then = new Date(iso + "T00:00:00").getTime();
+  const now = new Date(todayISO() + "T00:00:00").getTime();
+  return Math.max(0, Math.round((now - then) / 86400000));
+}
+
+export function newDecision(fields: { title: string; confidence: number; reviewInDays: number }): Decision {
+  return {
+    id: uid(),
+    date: todayISO(),
+    title: fields.title,
+    confidence: fields.confidence,
+    reviewInDays: fields.reviewInDays,
+    reviewAt: isoInDays(fields.reviewInDays),
+    outcome: null,
+    learning: "",
+    reviewedAt: null,
+    createdAt: Date.now(),
+  };
 }

@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react";
 import type { AppData, BackgroundId } from "@/lib/types";
-import { DEFAULT_DATA, loadData, saveData, newEntry, newLog, newPractice, todayISO } from "@/lib/store";
+import { DEFAULT_DATA, loadData, saveData, newEntry, newLog, newPractice, newDecision, todayISO } from "@/lib/store";
 
 interface StoreValue {
   data: AppData;
@@ -10,6 +10,8 @@ interface StoreValue {
   addEntry: (prompt: string, text: string, emotion: string | null) => void;
   addLog: (fields: { animo?: number; energia?: number; foco?: number; moment?: number }) => void;
   addPractice: (fields: { type: "reframe"; thought: string; lens: string; reframe: string }) => void;
+  addDecision: (fields: { title: string; confidence: number; reviewInDays: number }) => void;
+  reviewDecision: (id: string, outcome: string, learning: string) => void;
   setTodayMood: (animo: number) => void;
   toggleHabit: (index: number) => void;
   setBackground: (bg: BackgroundId, customBg?: string) => void;
@@ -48,6 +50,20 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     mutate((prev) => ({ ...prev, practices: [...prev.practices, newPractice(fields)] }));
   }, [mutate]);
 
+  const addDecision = useCallback((fields: { title: string; confidence: number; reviewInDays: number }) => {
+    if (!fields.title.trim()) return;
+    mutate((prev) => ({ ...prev, decisions: [...prev.decisions, newDecision({ ...fields, title: fields.title.trim() })] }));
+  }, [mutate]);
+
+  const reviewDecision = useCallback((id: string, outcome: string, learning: string) => {
+    mutate((prev) => ({
+      ...prev,
+      decisions: prev.decisions.map((d) =>
+        d.id === id ? { ...d, outcome, learning: learning.trim(), reviewedAt: Date.now() } : d
+      ),
+    }));
+  }, [mutate]);
+
   const setTodayMood = useCallback((animo: number) => {
     mutate((prev) => {
       const today = todayISO();
@@ -83,7 +99,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   return (
     <StoreContext.Provider
-      value={{ data, ready, addEntry, addLog, addPractice, setTodayMood, toggleHabit, setBackground, setName }}
+      value={{ data, ready, addEntry, addLog, addPractice, addDecision, reviewDecision, setTodayMood, toggleHabit, setBackground, setName }}
     >
       {children}
     </StoreContext.Provider>
