@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# capacitor (proyectos nativos generados con `npx cap add`)
+/ios
+/android
