@@ -143,7 +143,7 @@ export function daysSince(iso: string): number {
   return Math.max(0, Math.round((now - then) / 86400000));
 }
 
-export function newDecision(fields: { title: string; confidence: number; reviewInDays: number }): Decision {
+export function newDecision(fields: { title: string; confidence: number; reviewInDays: number; premortem?: string }): Decision {
   return {
     id: uid(),
     date: todayISO(),
@@ -154,6 +154,7 @@ export function newDecision(fields: { title: string; confidence: number; reviewI
     outcome: null,
     learning: "",
     reviewedAt: null,
+    premortem: fields.premortem,
     createdAt: Date.now(),
   };
 }

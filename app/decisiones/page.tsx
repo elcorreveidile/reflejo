@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useStore } from "../providers";
 import { OUTCOMES, PLAZOS, type Decision } from "@/lib/types";
 import { sortByNewest, daysSince } from "@/lib/store";
+import { computeCalibration } from "@/lib/calibration";
 
 function outcomeBadge(outcome: string): { color: string; bg: string } {
   if (outcome === "Mejor") return { color: "#bbe6cd", bg: "rgba(91,140,130,.32)" };
@@ -23,6 +24,7 @@ function ReviewCard({ decision }: { decision: Decision }) {
         Hace {dias} {dias === 1 ? "día" : "días"} · toca revisar
       </span>
       <span className="serif" style={{ fontSize: 20, lineHeight: 1.28, color: "#fbfaff" }}>{decision.title}</span>
+      {decision.premortem && <span style={{ fontSize: 12, color: "#cfd2e4", lineHeight: 1.4, fontStyle: "italic" }}>Tu premortem: {decision.premortem}</span>}
       <span style={{ fontSize: 13, color: "#cfd2e4" }}>¿Cómo ha salido, con perspectiva?</span>
       <div style={{ display: "flex", gap: 8 }}>
         {OUTCOMES.map((o) => {
@@ -47,11 +49,14 @@ function ReviewCard({ decision }: { decision: Decision }) {
 }
 
 export default function DecisionesPage() {
-  const { data, addDecision } = useStore();
+  const { data, addDecision, plus } = useStore();
   const [title, setTitle] = useState("");
   const [conf, setConf] = useState(3);
   const [plazo, setPlazo] = useState(1);
+  const [premortem, setPremortem] = useState("");
+  const [preUpsell, setPreUpsell] = useState(false);
   const [saved, setSaved] = useState(false);
+  const cal = computeCalibration(data.decisions);
 
   const pendientes = data.decisions.filter((d) => !d.outcome);
   const due = pendientes.filter((d) => d.reviewAt <= new Date().toISOString().slice(0, 10)).sort((a, b) => a.reviewAt.localeCompare(b.reviewAt));
@@ -60,10 +65,11 @@ export default function DecisionesPage() {
 
   function save() {
     if (!title.trim()) return;
-    addDecision({ title, confidence: conf, reviewInDays: PLAZOS[plazo].days });
+    addDecision({ title, confidence: conf, reviewInDays: PLAZOS[plazo].days, premortem: plus && premortem.trim() ? premortem.trim() : undefined });
     setTitle("");
     setConf(3);
     setPlazo(1);
+    setPremortem("");
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
   }
@@ -76,6 +82,38 @@ export default function DecisionesPage() {
       </header>
 
       {due.map((d) => <ReviewCard key={d.id} decision={d} />)}
+
+      {/* Calibración (Reflejo Plus) */}
+      <section style={{ borderRadius: 20, padding: "18px 16px", display: "flex", flexDirection: "column", gap: 14, background: "rgba(62,76,126,.28)", border: "1px solid rgba(154,166,224,.4)", WebkitBackdropFilter: "blur(12px)", backdropFilter: "blur(12px)" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span style={{ fontSize: 15, fontWeight: 600 }}>Calibración</span>
+          {!plus && <span style={{ fontSize: 11, fontWeight: 700, color: "#c7cde4", background: "rgba(154,166,224,.22)", borderRadius: 999, padding: "4px 10px" }}>Plus</span>}
+        </div>
+        {!plus ? (
+          <span style={{ fontSize: 13, color: "#cfd2e4", lineHeight: 1.45 }}>¿Tu confianza predice cómo salen tus decisiones? Reflejo Plus compara lo seguro que estabas con el resultado real y te dice si te calibras bien o pecas de exceso de confianza.</span>
+        ) : cal.reviewed < 3 ? (
+          <span style={{ fontSize: 13, color: "#cfd2e4", lineHeight: 1.45 }}>Revisa al menos 3 decisiones (con su confianza y su resultado) para ver tu calibración.</span>
+        ) : (
+          <>
+            <span style={{ fontSize: 13, color: "#cfd2e4" }}>Aciertas en el <b style={{ color: "#fbfaff" }}>{cal.overallWellPct}%</b> de tus {cal.reviewed} decisiones revisadas.</span>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {cal.buckets.filter((b) => b.total > 0).map((b) => {
+                const pct = Math.round((b.well / b.total) * 100);
+                return (
+                  <div key={b.conf} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{ width: 78, fontSize: 12, color: "#cfd2e4" }}>Confianza {b.conf}</span>
+                    <div style={{ flex: 1, height: 8, borderRadius: 999, background: "rgba(255,255,255,.10)", overflow: "hidden" }}>
+                      <div style={{ width: `${pct}%`, height: "100%", background: "#9aa6e0" }} />
+                    </div>
+                    <span style={{ width: 46, textAlign: "right", fontSize: 11, color: "#aeb1c6" }}>{b.well}/{b.total}</span>
+                  </div>
+                );
+              })}
+            </div>
+            {cal.insight && <span style={{ fontSize: 13, color: "#f5f3fb", lineHeight: 1.45 }}>{cal.insight}</span>}
+          </>
+        )}
+      </section>
 
       {/* Registrar */}
       <section className="glass" style={{ borderRadius: 20, padding: "18px 16px", display: "flex", flexDirection: "column", gap: 16 }}>
@@ -102,6 +140,17 @@ export default function DecisionesPage() {
             })}
           </div>
         </div>
+        {plus ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+            <label style={{ fontSize: 12, color: "#cfd2e4" }}>Premortem (opcional)</label>
+            <textarea value={premortem} onChange={(e) => setPremortem(e.target.value)} placeholder="Imagina que dentro de 6 meses salió mal. ¿Por qué?" style={{ width: "100%", boxSizing: "border-box", minHeight: 64, resize: "none", background: "rgba(255,255,255,.12)", border: "1px solid rgba(255,255,255,.22)", borderRadius: 12, padding: 12, fontSize: 13, lineHeight: 1.5, color: "#fbfaff" }} />
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <button onClick={() => setPreUpsell(true)} style={{ alignSelf: "flex-start", background: "rgba(154,166,224,.18)", color: "#c7cde4", border: "1px solid rgba(154,166,224,.4)", padding: "8px 14px", borderRadius: 999, fontSize: 13, fontWeight: 600 }}>+ Premortem · Plus</button>
+            {preUpsell && <span style={{ fontSize: 12, color: "#cfd2e4", lineHeight: 1.4 }}>Anticipar por qué una decisión podría salir mal es parte de Reflejo Plus.</span>}
+          </div>
+        )}
         <button onClick={save} disabled={!title.trim()} style={{ background: title.trim() ? "#f0be86" : "rgba(255,255,255,.12)", color: title.trim() ? "#23233a" : "#8a8ca0", border: "none", padding: 13, borderRadius: 12, fontSize: 14, fontWeight: 600 }}>
           {saved ? "Guardada ✓" : "Guardar decisión"}
         </button>

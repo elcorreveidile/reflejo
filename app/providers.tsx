@@ -10,7 +10,7 @@ interface StoreValue {
   addEntry: (prompt: string, text: string, emotion: string | null) => void;
   addLog: (fields: { animo?: number; energia?: number; foco?: number; moment?: number }) => void;
   addPractice: (fields: { exercise: string; capacity: Capacity; title: string; fields: Record<string, string> }) => void;
-  addDecision: (fields: { title: string; confidence: number; reviewInDays: number }) => void;
+  addDecision: (fields: { title: string; confidence: number; reviewInDays: number; premortem?: string }) => void;
   reviewDecision: (id: string, outcome: string, learning: string) => void;
   setTodayMood: (animo: number) => void;
   toggleHabit: (index: number) => void;
@@ -65,7 +65,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     mutate((prev) => ({ ...prev, practices: [...prev.practices, newPractice(fields)] }));
   }, [mutate]);
 
-  const addDecision = useCallback((fields: { title: string; confidence: number; reviewInDays: number }) => {
+  const addDecision = useCallback((fields: { title: string; confidence: number; reviewInDays: number; premortem?: string }) => {
     if (!fields.title.trim()) return;
     mutate((prev) => ({ ...prev, decisions: [...prev.decisions, newDecision({ ...fields, title: fields.title.trim() })] }));
   }, [mutate]);
