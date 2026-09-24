@@ -27,7 +27,13 @@ interface AnthropicResponse {
   content?: Array<{ text?: string }>;
 }
 
-export async function askAI(system: string, user: string, maxTokens = 400): Promise<string | null> {
+export interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
+/** Llama a los proveedores con una conversación completa (con failover). */
+export async function askAIChat(system: string, messages: ChatMessage[], maxTokens = 400): Promise<string | null> {
   for (const p of providers()) {
     try {
       const controller = new AbortController();
@@ -40,7 +46,7 @@ export async function askAI(system: string, user: string, maxTokens = 400): Prom
           "anthropic-version": "2023-06-01",
           "content-type": "application/json",
         },
-        body: JSON.stringify({ model: p.model, max_tokens: maxTokens, system, messages: [{ role: "user", content: user }] }),
+        body: JSON.stringify({ model: p.model, max_tokens: maxTokens, system, messages }),
         signal: controller.signal,
       });
       clearTimeout(timeout);
@@ -53,4 +59,8 @@ export async function askAI(system: string, user: string, maxTokens = 400): Prom
     }
   }
   return null;
+}
+
+export async function askAI(system: string, user: string, maxTokens = 400): Promise<string | null> {
+  return askAIChat(system, [{ role: "user", content: user }], maxTokens);
 }
