@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Reflejo</title>
+    <style>
+      html, body { margin: 0; height: 100%; background: #141628; color: #f5f3fb;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+      .wrap { height: 100%; display: flex; flex-direction: column; align-items: center;
+        justify-content: center; gap: 14px; text-align: center; padding: 24px; }
+      h1 { font-size: 26px; margin: 0; font-weight: 600; }
+      p { font-size: 15px; line-height: 1.5; color: #cfd2e4; max-width: 300px; margin: 0; }
+      button { margin-top: 8px; background: #f0be86; color: #23233a; border: none;
+        padding: 13px 22px; border-radius: 999px; font-size: 15px; font-weight: 700; }
+    </style>
+  </head>
+  <body>
+    <!-- Pantalla de reserva: solo se ve si no hay red en el primer arranque.
+         Con conexión, Capacitor carga la PWA de server.url. -->
+    <div class="wrap">
+      <h1>Reflejo</h1>
+      <p>Necesitamos conexión para el primer arranque. Luego funciona sin conexión.</p>
+      <button onclick="location.reload()">Reintentar</button>
+    </div>
+  </body>
+</html>
