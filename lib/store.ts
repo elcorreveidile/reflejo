@@ -10,7 +10,7 @@ export const DEFAULT_DATA: AppData = {
   practices: [],
   decisions: [],
   habits: {},
-  settings: { name: "", background: "cafe", habitLabels: [...HABIT_LABELS] },
+  settings: { name: "", background: "reflejo", habitLabels: [...HABIT_LABELS] },
 };
 
 export function normalize(parsed: Partial<AppData>): AppData {

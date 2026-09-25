@@ -1,4 +1,4 @@
-export type BackgroundId = "cafe" | "noche" | "bosque" | "arena" | "custom";
+export type BackgroundId = "reflejo" | "cafe" | "noche" | "bosque" | "arena" | "custom";
 
 export interface JournalEntry {
   id: string;

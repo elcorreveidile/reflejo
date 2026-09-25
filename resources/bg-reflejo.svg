@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="2160" viewBox="0 0 1080 2160" role="img" aria-label="Reflejo">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#252c56"/>
+      <stop offset="0.34" stop-color="#191e3c"/>
+      <stop offset="0.68" stop-color="#12142a"/>
+      <stop offset="1" stop-color="#0d0f20"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#f0be86" stop-opacity="0.30"/>
+      <stop offset="0.55" stop-color="#e7ab6d" stop-opacity="0.10"/>
+      <stop offset="1" stop-color="#f0be86" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="orb" cx="0.42" cy="0.36" r="0.72">
+      <stop offset="0" stop-color="#ffe4bd" stop-opacity="0.85"/>
+      <stop offset="0.5" stop-color="#f0be86" stop-opacity="0.62"/>
+      <stop offset="1" stop-color="#cf9550" stop-opacity="0.42"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1080" height="2160" fill="url(#bg)"/>
+
+  <!-- halo amplio del orbe, arriba -->
+  <circle cx="540" cy="600" r="520" fill="url(#glow)"/>
+
+  <!-- orbe tenue (no pisa el contenido, solo insinúa la marca) -->
+  <circle cx="540" cy="600" r="150" fill="url(#orb)"/>
+  <circle cx="486" cy="548" r="48" fill="#fff3e2" opacity="0.30"/>
+
+  <!-- reflejo: ondas que descienden y se desvanecen -->
+  <ellipse cx="540" cy="820"  rx="150" ry="42" fill="#f0be86" opacity="0.20"/>
+  <ellipse cx="540" cy="922"  rx="116" ry="30" fill="#f0be86" opacity="0.12"/>
+  <ellipse cx="540" cy="1004" rx="84"  ry="20" fill="#f0be86" opacity="0.07"/>
+  <ellipse cx="540" cy="1068" rx="54"  ry="13" fill="#f0be86" opacity="0.04"/>
+</svg>
