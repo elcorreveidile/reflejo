@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="2160" viewBox="0 0 1080 2160" role="img" aria-label="Reflejo">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#252c56"/>
+      <stop offset="0.34" stop-color="#191e3c"/>
+      <stop offset="0.68" stop-color="#12142a"/>
+      <stop offset="1" stop-color="#0d0f20"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#f0be86" stop-opacity="0.38"/>
+      <stop offset="0.55" stop-color="#e7ab6d" stop-opacity="0.13"/>
+      <stop offset="1" stop-color="#f0be86" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="orb" cx="0.42" cy="0.36" r="0.72">
+      <stop offset="0" stop-color="#fff0da" stop-opacity="0.95"/>
+      <stop offset="0.5" stop-color="#f4c78f" stop-opacity="0.74"/>
+      <stop offset="1" stop-color="#d59d55" stop-opacity="0.5"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1080" height="2160" fill="url(#bg)"/>
+
+  <!-- orbe centrado, con su reflejo -->
+  <circle cx="540" cy="1080" r="540" fill="url(#glow)"/>
+  <circle cx="540" cy="1080" r="150" fill="url(#orb)"/>
+  <circle cx="486" cy="1028" r="50" fill="#fff5e8" opacity="0.38"/>
+
+  <ellipse cx="540" cy="1300" rx="150" ry="42" fill="#f0be86" opacity="0.22"/>
+  <ellipse cx="540" cy="1402" rx="116" ry="30" fill="#f0be86" opacity="0.13"/>
+  <ellipse cx="540" cy="1484" rx="84"  ry="20" fill="#f0be86" opacity="0.08"/>
+  <ellipse cx="540" cy="1548" rx="54"  ry="13" fill="#f0be86" opacity="0.05"/>
+</svg>

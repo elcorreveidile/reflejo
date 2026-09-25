@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 import type { BackgroundId, Settings } from "./types";
 
 export const BACKGROUNDS: { id: Exclude<BackgroundId, "custom">; label: string; css: string }[] = [
+  { id: "reflejo", label: "Reflejo", css: "url(/backgrounds/reflejo.jpg)" },
   { id: "cafe", label: "Café", css: "url(/backgrounds/cafe.jpg)" },
   { id: "noche", label: "Noche", css: "linear-gradient(160deg,#2a3360,#141a33)" },
   { id: "bosque", label: "Bosque", css: "linear-gradient(160deg,#264734,#10241a)" },
